@@ -41,7 +41,7 @@ class Actor(object):
 
 
 def rl_evaluate(env, actor, nepisodes, outfile=None, device='cpu',
-                save_info=False):
+                save_info=False, render=False):
     """Compute episode stats for an environment and actor.
 
     If the environment has an EpisodeInfo Wrapper, rl_record will use that
@@ -70,13 +70,15 @@ def rl_evaluate(env, actor, nepisodes, outfile=None, device='cpu',
     dones = None
     actor = Actor(actor, device)
     while len(ep_lengths) < nepisodes:
+        start = time.time()
+        
         obs, rs, dones, infos = env.step(actor(obs, dones))
         rewards += rs
         lengths += 1
         if save_info:
             all_infos.append(infos)
         for i, done in enumerate(dones):
-            if 'episode_info' in infos[i]:
+            if 'episode_info' in infos[i]:  # TODO: ???
                 if infos[i]['episode_info']['done']:
                     ep_lengths.append(infos[i]['episode_info']['length'])
                     ep_rewards.append(infos[i]['episode_info']['reward'])
@@ -88,6 +90,15 @@ def rl_evaluate(env, actor, nepisodes, outfile=None, device='cpu',
                 ep_rewards.append(float(rewards[i]))
                 lengths[i] = 0
                 rewards[i] = 0.
+            
+        if render:
+            env.render()
+        
+            # fps management
+            fps = 50
+            elapsed = time.time() - start
+            if elapsed < 1 / fps:
+                time.sleep(1 / fps - elapsed)
 
     outs = {
         'episode_lengths': ep_lengths,
