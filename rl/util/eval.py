@@ -1,15 +1,15 @@
 """Evaluation for RL Environments."""
-import os
 import json
+import os
+import subprocess as sp
 import tempfile
 import time
+
 import numpy as np
-from imageio import imwrite
-import subprocess as sp
-from dl import logger
-from dl import nest
-from dl.rl.util import ensure_vec_env
 import torch
+from dl import logger, nest
+from dl.rl.util import ensure_vec_env
+from imageio import imwrite
 
 
 class Actor(object):
@@ -170,9 +170,10 @@ def rl_record(env, actor, nepisodes, outfile, device='cpu', fps=30):
 
 if __name__ == '__main__':
     import unittest
+    from collections import namedtuple
+
     import gym
     from dl.rl.envs import EpisodeInfo
-    from collections import namedtuple
 
     class Test(unittest.TestCase):
         """Test."""
