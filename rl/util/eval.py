@@ -7,9 +7,10 @@ import time
 
 import numpy as np
 import torch
+from imageio import imwrite
+
 from dl import logger, nest
 from dl.rl.util import ensure_vec_env
-from imageio import imwrite
 
 
 class Actor(object):
@@ -71,7 +72,7 @@ def rl_evaluate(env, actor, nepisodes, outfile=None, device='cpu',
     actor = Actor(actor, device)
     while len(ep_lengths) < nepisodes:
         start = time.time()
-        
+
         obs, rs, dones, infos = env.step(actor(obs, dones))
         rewards += rs
         lengths += 1
@@ -184,6 +185,7 @@ if __name__ == '__main__':
     from collections import namedtuple
 
     import gym
+
     from dl.rl.envs import EpisodeInfo
 
     class Test(unittest.TestCase):

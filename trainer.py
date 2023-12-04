@@ -1,7 +1,9 @@
 """Basic training loop."""
-import gin
 import os
 import time
+
+import gin
+
 from dl import logger, rng
 
 
@@ -104,6 +106,8 @@ def train(logdir,
             if eval and (t - last_eval) >= eval_period:
                 alg.evaluate()
                 last_eval = t
+
+            logger.log(f"t = {t} / {maxt if maxt else '-'}")
     except KeyboardInterrupt:
         logger.log("Caught Ctrl-C. Saving model and exiting...")
     alg.save()
@@ -114,8 +118,8 @@ def train(logdir,
 
 if __name__ == '__main__':
 
-    import unittest
     import shutil
+    import unittest
 
     EVAL_PERIOD = 100
     SAVE_PERIOD = 50
