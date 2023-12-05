@@ -1,10 +1,11 @@
 """Register pytorch classes and functions with gin."""
+import inspect
+
 import gin
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 import torchvision
-import inspect
 
 optimizers = [obj for name, obj in inspect.getmembers(optim)
               if inspect.isclass(obj)]

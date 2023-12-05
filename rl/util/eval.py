@@ -7,9 +7,10 @@ import time
 
 import numpy as np
 import torch
+from imageio import imwrite
+
 from dl import logger, nest
 from dl.rl.util import ensure_vec_env
-from imageio import imwrite
 
 
 class Actor(object):
@@ -71,29 +72,35 @@ def rl_evaluate(env, actor, nepisodes, outfile=None, device='cpu',
     actor = Actor(actor, device)
     while len(ep_lengths) < nepisodes:
         start = time.time()
-        
+
         obs, rs, dones, infos = env.step(actor(obs, dones))
         rewards += rs
         lengths += 1
         if save_info:
             all_infos.append(infos)
         for i, done in enumerate(dones):
-            if 'episode_info' in infos[i]:  # TODO: ???
-                if infos[i]['episode_info']['done']:
-                    ep_lengths.append(infos[i]['episode_info']['length'])
-                    ep_rewards.append(infos[i]['episode_info']['reward'])
-                    lengths[i] = 0
-                    rewards[i] = 0.
-                dones[i] = infos[i]['episode_info']['done']
-            elif done:
-                ep_lengths.append(int(lengths[i]))
-                ep_rewards.append(float(rewards[i]))
+            if 'episode_info' in infos[i]:
+                # For environments with an EpisodeInfo Wrapper
+                dones[i] = done = infos[i]['episode_info']['done']
+
+            if done:
+                if 'episode_info' in infos[i]:
+                    ep_length = infos[i]['episode_info']['length']
+                    ep_reward = infos[i]['episode_info']['reward']
+                else:
+                    ep_length = lengths[i]
+                    ep_reward = rewards[i]
+
+                ep_lengths.append(ep_length)
                 lengths[i] = 0
+                ep_rewards.append(ep_reward)
                 rewards[i] = 0.
-            
+                print(f"Episode {len(ep_lengths)}: length={ep_length}, reward={ep_reward:.2f}")
+                # env has been reset in DummyVecEnv.step_wait()
+
         if render:
             env.render()
-        
+
             # fps management
             fps = 50
             elapsed = time.time() - start
@@ -184,6 +191,7 @@ if __name__ == '__main__':
     from collections import namedtuple
 
     import gym
+
     from dl.rl.envs import EpisodeInfo
 
     class Test(unittest.TestCase):
