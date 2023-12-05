@@ -24,7 +24,7 @@ class Checkpointer():
     def ckpts(self):
         """Get list of checkpoints."""
         ckpts = glob.glob(os.path.join(self.ckptdir, "*.pt"))
-        return sorted([int(c.split("\\")[-1][:-3]) for c in ckpts])
+        return sorted([int(c.split(os.path.sep)[-1][:-3]) for c in ckpts])
 
     def get_ckpt_path(self, t):
         """Convert checkpoint timestep to path."""
