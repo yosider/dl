@@ -81,25 +81,25 @@ def rl_evaluate(env, actor, nepisodes, outfile=None, device='cpu',
         for i, done in enumerate(dones):
             if 'episode_info' in infos[i]:
                 # For environments with an EpisodeInfo Wrapper
-                dones[i] = infos[i]['episode_info']['done']
-                if dones[i]:
-                    ep_lengths.append(infos[i]['episode_info']['length'])
-                    ep_rewards.append(infos[i]['episode_info']['reward'])
-                    lengths[i] = 0
-                    rewards[i] = 0.
-            elif done:
-                ep_lengths.append(int(lengths[i]))
-                ep_rewards.append(float(rewards[i]))
+                dones[i] = done = infos[i]['episode_info']['done']
+
+            if done:
+                if 'episode_info' in infos[i]:
+                    ep_length = infos[i]['episode_info']['length']
+                    ep_reward = infos[i]['episode_info']['reward']
+                else:
+                    ep_length = lengths[i]
+                    ep_reward = rewards[i]
+
+                ep_lengths.append(ep_length)
                 lengths[i] = 0
+                ep_rewards.append(ep_reward)
                 rewards[i] = 0.
-            # TODO: Why we don't have to reset the state if done?
+                print(f"Episode {len(ep_lengths)}: length={ep_length}, reward={ep_reward:.2f}")
+                # env has been reset in DummyVecEnv.step_wait()
 
         if render:
             env.render()
-
-            if dones[i]:
-                # FIXME: step, rewardがすでに更新されている
-                print(f"Episode {len(ep_lengths)}: step={lengths[i] + 1}, reward={rewards[i]:.2f}")
 
             # fps management
             fps = 50
