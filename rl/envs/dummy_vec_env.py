@@ -3,7 +3,9 @@
 import numpy as np
 from baselines.common.vec_env import VecEnv
 from baselines.common.vec_env.util import copy_obs_dict, dict_to_obs, obs_space_info
-from dl.rl import env_state_dict, env_load_state_dict
+
+from dl.rl import env_load_state_dict, env_state_dict
+
 
 class DummyVecEnv(VecEnv):
     """
@@ -103,6 +105,7 @@ class DummyVecEnv(VecEnv):
 
 if __name__ == "__main__":
     import unittest
+
     import gym
     from gym import Wrapper
 

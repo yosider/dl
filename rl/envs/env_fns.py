@@ -1,13 +1,13 @@
 """Set up gin.configurables for environment creation."""
+import sys
+
 import baselines.common.atari_wrappers as atari_wrappers
-from dl.rl.envs.logging_wrappers import EpisodeInfo
-from dl.rl.envs.misc_wrappers import ImageTranspose
-from dl.rl.envs import VecFrameStack
-from dl.rl.envs import VecObsNormWrapper
-from dl.rl.envs import SubprocVecEnv
-from dl.rl.envs import DummyVecEnv
 import gin
 import gym
+
+from dl.rl.envs import DummyVecEnv, SubprocVecEnv, VecFrameStack, VecObsNormWrapper
+from dl.rl.envs.logging_wrappers import EpisodeInfo
+from dl.rl.envs.misc_wrappers import ImageTranspose
 
 
 class StepOnEndOfLifeEnv(gym.Wrapper):

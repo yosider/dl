@@ -1,20 +1,22 @@
 """Checkpointer."""
-import os
 import glob
+import os
+
+import gin
 import numpy as np
 import torch
-import gin
+
 from dl.util import rng
 
 
-@gin.configurable(blacklist=['ckptdir'])
-class Checkpointer():
+@gin.configurable(blacklist=["ckptdir"])
+class Checkpointer:
     """Save and load model and training state.
 
     RNG state is saved and loaded automatically.
     """
 
-    def __init__(self, ckptdir, ckpt_period=None, format='{:09d}'):
+    def __init__(self, ckptdir, ckpt_period=None, format="{:09d}"):
         """Init."""
         self.ckptdir = ckptdir
         self.ckpt_period = ckpt_period
@@ -28,18 +30,21 @@ class Checkpointer():
 
     def get_ckpt_path(self, t):
         """Convert checkpoint timestep to path."""
-        return os.path.join(self.ckptdir, self.format.format(t) + '.pt')
+        return os.path.join(self.ckptdir, self.format.format(t) + ".pt")
 
     def save(self, save_dict, t):
         """Save checkpoint."""
         ts = self.ckpts()
         max_t = max(ts) if len(ts) > 0 else -1
-        assert t >= max_t, (f"Cannot save a checkpoint at timestep {t} when "
-                            "checkpoints at a later timestep exist.")
-        if '_rng' in save_dict:
-            raise ValueError("Can't save rng state because the key '_rng' "
-                             "is in use.")
-        save_dict['_rng'] = rng.get_state()
+        assert t >= max_t, (
+            f"Cannot save a checkpoint at timestep {t} when "
+            "checkpoints at a later timestep exist."
+        )
+        if "_rng" in save_dict:
+            raise ValueError(
+                "Can't save rng state because the key '_rng' " "is in use."
+            )
+        save_dict["_rng"] = rng.get_state()
         torch.save(save_dict, self.get_ckpt_path(t))
         self.prune_ckpts()
 
@@ -56,8 +61,8 @@ class Checkpointer():
         if torch.cuda.is_available():
             save_dict = torch.load(path)
         else:
-            save_dict = torch.load(path, map_location='cpu')
-        rng.set_state(save_dict['_rng'])
+            save_dict = torch.load(path, map_location="cpu")
+        rng.set_state(save_dict["_rng"])
         return save_dict
 
     def prune_ckpts(self):
@@ -78,7 +83,7 @@ class Checkpointer():
             os.remove(self.get_ckpt_path(t))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import unittest
     from shutil import rmtree
 
@@ -87,15 +92,15 @@ if __name__ == '__main__':
 
         def test(self):
             """Test."""
-            ckptr = Checkpointer('./.test_ckpt_dir', ckpt_period=10)
+            ckptr = Checkpointer("./.test_ckpt_dir", ckpt_period=10)
             for t in range(100):
-                ckptr.save({'test': t},  t)
+                ckptr.save({"test": t}, t)
 
-            assert ckptr.load()['test'] == 99
+            assert ckptr.load()["test"] == 99
 
             assert ckptr.ckpts() == [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 99]
             for t in [0, 10, 50]:
-                assert ckptr.load(t)['test'] == t
+                assert ckptr.load(t)["test"] == t
 
             try:
                 ckptr.load(5)
@@ -104,28 +109,28 @@ if __name__ == '__main__':
                 pass
 
             try:
-                ckptr.save({'test': 1},  1)
+                ckptr.save({"test": 1}, 1)
                 assert False
             except Exception:
                 pass
 
-            rmtree('.test_ckpt_dir')
+            rmtree(".test_ckpt_dir")
 
-            ckptr = Checkpointer('./.test_ckpt_dir')
+            ckptr = Checkpointer("./.test_ckpt_dir")
             for t in range(100):
-                ckptr.save({'test': t},  t)
+                ckptr.save({"test": t}, t)
             for t in range(100):
                 assert os.path.exists(ckptr.get_ckpt_path(t))
-            rmtree('.test_ckpt_dir')
+            rmtree(".test_ckpt_dir")
 
         def test_rng(self):
-            ckptr = Checkpointer('./.test_ckpt_dir', ckpt_period=10)
+            ckptr = Checkpointer("./.test_ckpt_dir", ckpt_period=10)
             rng.seed(0)
             ckptr.save({}, 0)
             r1 = np.random.rand(10)
             ckptr.load(0)
             r2 = np.random.rand(10)
             assert np.allclose(r1, r2)
-            rmtree('.test_ckpt_dir')
+            rmtree(".test_ckpt_dir")
 
     unittest.main()
