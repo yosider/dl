@@ -90,7 +90,8 @@ def make_env(env_id, nenv=1, seed=0, norm_observations=False):
         return _thunk
 
     if nenv > 1:
-        env = SubprocVecEnv([_env(i) for i in range(nenv)], context='fork')
+        context = 'spawn' if sys.platform.startswith('win') else 'fork'
+        env = SubprocVecEnv([_env(i) for i in range(nenv)], context=context)
     else:
         env = DummyVecEnv([_env(0)])
 
