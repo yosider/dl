@@ -58,7 +58,7 @@ for d in datasets:
     gin.config.external_configurable(d, module='datasets')
 
 
-def load_config(gin_files, gin_bindings=[]):
+def load_config(gin_files, gin_bindings=[], finalize=True):
     """Load gin configuration files.
 
     Args:
@@ -72,4 +72,5 @@ def load_config(gin_files, gin_bindings=[]):
         gin_files = [gin_files]
     gin.parse_config_files_and_bindings(gin_files,
                                         bindings=gin_bindings,
-                                        skip_unknown=False)
+                                        skip_unknown=False,
+                                        finalize_config=finalize)
